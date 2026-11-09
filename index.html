@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07090d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Panel de Vida">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>html,body{margin:0;min-height:100%}:root{padding-top:env(safe-area-inset-top,0px)}[hidden]{display:none!important}body{font-size:14px}</style>
+<title>Panel de Vida</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Concepto: app móvil de una columna, oscura primero. Tarjetas suaves, íconos en fichas de color,
+   barras y un anillo de ahorro como en la referencia. Barra de pestañas fija abajo. */
+:root {
+  --bg: #07090d;
+  --surface: #0e1218;
+  --surface-2: #151b23;
+  --line: #1d242e;
+  --fg: #f1f4f8;
+  --muted: #8793a3;
+  --faint: #566171;
+  --blue: #55c3ff;
+  --red: #ff5471;
+  --green: #33e08f;
+  --purple: #a98bff;
+  --amber: #ffbe55;
+  --pink: #ff7ac8;
+  --on-accent: #04130b;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f5f8; --surface: #ffffff; --surface-2: #eef1f5; --line: #e1e6ed;
+    --fg: #0f1620; --muted: #5d6978; --faint: #8b96a5;
+    --blue: #0a7fbf; --red: #d8294a; --green: #0d9a58; --purple: #6a4cde; --amber: #a8630a; --pink: #bf3189;
+    --on-accent: #ffffff; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f3f5f8; --surface: #ffffff; --surface-2: #eef1f5; --line: #e1e6ed;
+  --fg: #0f1620; --muted: #5d6978; --faint: #8b96a5;
+  --blue: #0a7fbf; --red: #d8294a; --green: #0d9a58; --purple: #6a4cde; --amber: #a8630a; --pink: #bf3189;
+  --on-accent: #ffffff; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.app { max-width: 560px; margin: 0 auto; padding-block: 18px 128px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.top h1 { font-family: var(--font-display); font-size: 27px; line-height: 1.1; margin: 0; font-weight: 700; letter-spacing: -.01em; text-wrap: balance; }
+.top p { margin: 4px 0 0; color: var(--muted); }
+.chip { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 99px; background: color-mix(in srgb, var(--green) 14%, transparent); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); white-space: nowrap; }
+.chip.off { background: var(--surface-2); color: var(--muted); border-color: var(--line); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.card-h h2 { font-family: var(--font-display); font-size: 17px; margin: 0; font-weight: 700; }
+.sub { color: var(--muted); font-size: 13px; }
+.link { color: var(--muted); font-size: 13px; font-weight: 600; padding: 4px 2px; }
+.link.on { color: var(--green); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.stat b { font-family: var(--font-display); font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); flex: none; }
+.ico svg, .tab svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border-radius: 13px; padding: 10px 12px; min-width: 0; }
+.item .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.item .txt small { display: block; color: var(--muted); font-size: 12px; }
+.item.done .txt b { color: var(--faint); text-decoration: line-through; font-weight: 500; }
+.chk { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--faint); display: grid; place-items: center; flex: none; color: transparent; }
+.chk svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.chk.on { background: var(--green); border-color: var(--green); color: var(--on-accent); }
+.x { color: var(--faint); width: 30px; height: 30px; border-radius: 8px; font-size: 20px; line-height: 1; flex: none; }
+.x:hover { color: var(--red); }
+.form { display: flex; gap: 8px; flex-wrap: wrap; }
+.in { flex: 1 1 120px; min-width: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--fg); font: inherit; font-size: 16px; }
+.in::placeholder { color: var(--faint); }
+select.in { appearance: none; }
+.btn { background: var(--green); color: var(--on-accent); font-weight: 700; padding: 12px 18px; border-radius: 12px; flex: none; }
+.btn.ghost { background: var(--surface-2); color: var(--fg); font-weight: 600; border: 1px solid var(--line); }
+.btn.sm { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: inherit; background: var(--c, var(--green)); }
+.cat { display: flex; flex-direction: column; gap: 6px; }
+.cat-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 14px; }
+.cat-h b { font-weight: 600; }
+.cat-h span { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+.cat.over .cat-h span { color: var(--red); font-weight: 600; }
+.pill { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; color: var(--red); border: 1px solid color-mix(in srgb, var(--red) 45%, transparent); margin-left: 6px; }
+.alert { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 13px; background: color-mix(in srgb, var(--red) 12%, transparent); border: 1px solid color-mix(in srgb, var(--red) 35%, transparent); color: var(--fg); font-size: 14px; }
+.alert .ico { --c: var(--red); width: 28px; height: 28px; border-radius: 8px; }
+.ring-wrap { display: flex; align-items: center; gap: 16px; }
+.ring { width: 96px; height: 96px; flex: none; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 9; }
+.ring .t { stroke: var(--surface-2); }
+.ring .p { stroke: var(--green); stroke-linecap: round; }
+.ring b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.big { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.15; }
+.empty { text-align: center; color: var(--muted); padding: 18px 8px; font-size: 14px; border: 1px dashed var(--line); border-radius: 13px; text-wrap: balance; }
+.banner { background: color-mix(in srgb, var(--amber) 12%, transparent); border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.banner .form { gap: 8px; }
+.goal-p { display: flex; justify-content: space-between; align-items: baseline; }
+.goal-p b { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--green); height: 28px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-left: auto; width: min(58%, 230px); }
+.days button, .days span { height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.days span { color: var(--faint); height: auto; }
+.days button { background: var(--surface); border: 1px solid var(--line); color: transparent; }
+.days button.on { background: var(--green); border-color: var(--green); color: var(--on-accent); }
+.days button.today { border-color: var(--muted); }
+.days button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.hab { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 13px; padding: 12px; }
+.hab-h { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.hab-h small { color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hchip { padding: 8px 13px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); font-size: 14px; font-weight: 600; }
+.hchip.on { background: color-mix(in srgb, var(--green) 16%, transparent); border-color: color-mix(in srgb, var(--green) 45%, transparent); color: var(--green); }
+.stages { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.stages i { height: 6px; border-radius: 99px; background: var(--line); }
+.stages i.on { background: var(--purple); }
+.stage-n { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tag { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: color-mix(in srgb, var(--purple) 16%, transparent); color: var(--purple); }
+.tag.fin { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+.vid { display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); border-radius: 13px; padding: 12px; }
+.vid-b { display: flex; gap: 8px; }
+nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+.tabs { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11px; font-weight: 600; color: var(--faint); border-radius: 12px; }
+.tab.on { color: var(--green); }
+@media (prefers-reduced-motion: no-preference) { .bar i, .ring .p { transition: width .4s ease, stroke-dashoffset .5s ease; } }
+</style>
+
+<div class="app" id="app"></div>
+<nav aria-label="Secciones"><div class="tabs" id="tabs"></div></nav>
+
+<script>
+(function () {
+  var ICON = {
+    hoy: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    dinero: '<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1"/>',
+    metas: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    habitos: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+    canal: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/>',
+    tareas: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',
+    alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+  };
+  var svg = function (k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[k] + '</svg>'; };
+  var TABS = [['hoy', 'Hoy'], ['dinero', 'Dinero'], ['metas', 'Metas'], ['habitos', 'Hábitos'], ['canal', 'Canal']];
+  var STAGES = ['Idea', 'Guion', 'Voz', 'Animación', 'Miniatura', 'Publicado'];
+  var CAT_COLORS = ['var(--blue)', 'var(--purple)', 'var(--amber)', 'var(--pink)', 'var(--green)'];
+
+  var uid = function () { return Math.random().toString(36).slice(2, 9); };
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var keyOf = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var dayKey = function (back) { var d = new Date(); d.setDate(d.getDate() - back); return keyOf(d); };
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var fm = function (n) { return (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString('es-MX'); };
+  var T = dayKey(0);
+  var MONTH = T.slice(0, 7);
+
+  function sample() {
+    var c1 = uid(), c2 = uid(), c3 = uid(), c4 = uid();
+    var h1 = uid(), h2 = uid(), h3 = uid(), h4 = uid();
+    function d(back) { var o = {}; back.forEach(function (b) { o[dayKey(b)] = true; }); return o; }
+    return {
+      v: 1, updated: 0, sample: true, name: '',
+      tasks: [
+        { id: uid(), t: 'Revisar el guion del video 02', done: false },
+        { id: uid(), t: 'Pagar el recibo de luz', done: false },
+        { id: uid(), t: 'Entrenar 40 minutos', done: true },
+        { id: uid(), t: 'Responder mensajes pendientes', done: false }
+      ],
+      habits: [
+        { id: h1, name: 'Tomar 2 litros de agua', days: d([0, 1, 2, 4]) },
+        { id: h2, name: 'Hacer ejercicio', days: d([0, 2, 3]) },
+        { id: h3, name: 'Leer 15 minutos', days: d([1, 2]) },
+        { id: h4, name: 'Dormir antes de las 11', days: d([1, 3, 4, 5]) }
+      ],
+      cats: [
+        { id: c1, name: 'Comida', limit: 3500 }, { id: c2, name: 'Transporte', limit: 1500 },
+        { id: c3, name: 'Suscripciones', limit: 800 }, { id: c4, name: 'Ocio', limit: 1000 }
+      ],
+      expenses: [
+        { id: uid(), cat: c1, amt: 1450, note: 'Súper', date: dayKey(0) },
+        { id: uid(), cat: c1, amt: 780, note: 'Cena fuera', date: dayKey(1) },
+        { id: uid(), cat: c2, amt: 640, note: 'Gasolina', date: dayKey(2) },
+        { id: uid(), cat: c3, amt: 899, note: 'Herramientas de IA', date: dayKey(3) },
+        { id: uid(), cat: c4, amt: 420, note: 'Cine', date: dayKey(4) }
+      ],
+      save: { name: 'Fondo de emergencia', target: 10000, saved: 3500 },
+      goals: [
+        { id: uid(), t: 'Publicar 12 videos en el canal', pct: 10, due: '' },
+        { id: uid(), t: 'Juntar el fondo de emergencia', pct: 35, due: '' }
+      ],
+      videos: [
+        { id: uid(), t: 'Video 01', stage: 5 },
+        { id: uid(), t: 'Video 02', stage: 1 },
+        { id: uid(), t: 'Video 03', stage: 0 }
+      ]
+    };
+  }
+  function blank(name) {
+    return { v: 1, updated: Date.now(), sample: false, name: name || '', tasks: [], habits: [], cats: [], expenses: [], save: { name: 'Mi meta de ahorro', target: 0, saved: 0 }, goals: [], videos: [] };
+  }
+
+  var S;
+  try { var raw = localStorage.getItem('pv1'); S = raw ? JSON.parse(raw) : null; } catch (e) { S = null; }
+  if (!S || !S.tasks) S = sample();
+  var ui = { tab: 'hoy', edit: {} };
+  try { var t0 = localStorage.getItem('pv1tab'); if (t0) ui.tab = t0; } catch (e) {}
+
+  /* ---------- guardado en este teléfono ---------- */
+  function saveLocal() { try { localStorage.setItem('pv1', JSON.stringify(S)); } catch (e) {} }
+  function setStatus(s) { var el = document.getElementById('stat'); if (el) { el.className = 'chip off'; el.textContent = 'Guardado en este teléfono'; } }
+  function touch() { S.updated = Date.now(); saveLocal(); render(); }
+
+  /* ---------- cálculos ---------- */
+  function spentBy(id) { return S.expenses.filter(function (x) { return x.cat === id && x.date.slice(0, 7) === MONTH; }).reduce(function (a, x) { return a + x.amt; }, 0); }
+  function totals() {
+    var lim = S.cats.reduce(function (a, c) { return a + c.limit; }, 0);
+    var sp = S.cats.reduce(function (a, c) { return a + spentBy(c.id); }, 0);
+    return { lim: lim, sp: sp, pct: lim ? Math.round(sp / lim * 100) : 0 };
+  }
+  function streak(h) {
+    var n = 0, i = h.days[dayKey(0)] ? 0 : 1;
+    while (h.days[dayKey(i)]) { n++; i++; }
+    return n;
+  }
+  function daysLeft(due) {
+    return Math.round((new Date(due + 'T00:00:00') - new Date(T + 'T00:00:00')) / 864e5);
+  }
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+
+  /* ---------- vistas ---------- */
+  function stat(k, c, val, label) {
+    return '<div class="stat"><span class="ico" style="--c:' + c + '">' + svg(k) + '</span><b>' + val + '</b><span>' + label + '</span></div>';
+  }
+  function bannerHtml() {
+    if (!S.sample) return '';
+    return '<div class="banner"><div><b>Estos son datos de ejemplo.</b> Cámbialos a tu gusto o empieza con todo en blanco.</div><div class="form"><button class="btn sm" data-act="blank">Empezar en blanco</button><button class="btn ghost sm" data-act="keep">Quedarme con los ejemplos</button></div></div>';
+  }
+  function vHoy() {
+    var open = S.tasks.filter(function (t) { return !t.done; }).length;
+    var hd = S.habits.filter(function (h) { return h.days[T]; }).length;
+    var tt = totals();
+    var tasks = S.tasks.length ? '<ul class="list">' + S.tasks.map(function (t) {
+      return '<li class="item' + (t.done ? ' done' : '') + '"><button class="chk' + (t.done ? ' on' : '') + '" data-act="tt" data-id="' + t.id + '" aria-label="Marcar tarea">' + svg('check') + '</button><span class="txt"><b>' + esc(t.t) + '</b></span><button class="x" data-act="td" data-id="' + t.id + '" aria-label="Quitar tarea">×</button></li>';
+    }).join('') + '</ul>' : '<div class="empty">Sin tareas. Escribe la primera abajo.</div>';
+    var chips = S.habits.length ? '<div class="chips">' + S.habits.map(function (h) {
+      return '<button class="hchip' + (h.days[T] ? ' on' : '') + '" data-act="ht" data-id="' + h.id + '" data-v="' + T + '">' + esc(h.name) + '</button>';
+    }).join('') + '</div>' : '<div class="empty">Aún no tienes hábitos. Agrégalos en la pestaña Hábitos.</div>';
+    var hr = new Date().getHours();
+    var greet = hr < 12 ? 'Buenos días' : hr < 19 ? 'Buenas tardes' : 'Buenas noches';
+    return '<div class="top"><div><h1>' + greet + (S.name ? ', ' + esc(S.name) : '') + '</h1><p>' + cap(new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })) + '</p></div><span id="stat" class="chip off">Guardado en este teléfono</span></div>' +
+      bannerHtml() +
+      (S.name ? '' : '<form class="form" id="nameForm"><input class="in" name="n" placeholder="¿Cómo te llamo?" maxlength="30" autocomplete="off" aria-label="Tu nombre"><button class="btn" type="submit">Guardar</button></form>') +
+      '<div class="stats">' + stat('tareas', 'var(--green)', open, open === 1 ? 'tarea pendiente' : 'tareas pendientes') +
+      stat('habitos', 'var(--purple)', hd + '/' + S.habits.length, 'hábitos hoy') +
+      stat('dinero', 'var(--blue)', S.cats.length ? tt.pct + '%' : '—', 'del presupuesto') + '</div>' +
+      '<section class="card"><div class="card-h"><h2>Tareas de hoy</h2><span class="sub">' + S.tasks.length + ' en total</span></div>' + tasks +
+      '<form class="form" id="taskForm"><input class="in" id="taskIn" name="t" placeholder="Nueva tarea" autocomplete="off" maxlength="120"><button class="btn" type="submit">Agregar</button></form></section>' +
+      '<section class="card"><div class="card-h"><h2>Hábitos de hoy</h2><span class="sub">Toca para marcar</span></div>' + chips + '</section>';
+  }
+  function vDinero() {
+    var ed = ui.edit.dinero, tt = totals();
+    var mname = cap(new Date().toLocaleDateString('es-MX', { month: 'long' }));
+    var rows = S.cats.map(function (c, i) {
+      var sp = spentBy(c.id), over = sp > c.limit, p = c.limit ? Math.min(100, sp / c.limit * 100) : 0;
+      var col = over ? 'var(--red)' : CAT_COLORS[i % CAT_COLORS.length];
+      var head = ed ? '<div class="cat-h"><b>' + esc(c.name) + '</b><span><input class="in" style="padding:6px 8px;width:96px;font-size:15px" type="number" inputmode="numeric" min="0" data-ch="limit" data-id="' + c.id + '" value="' + c.limit + '" aria-label="Límite de ' + esc(c.name) + '"> <button class="x" data-act="cd" data-id="' + c.id + '" aria-label="Quitar categoría">×</button></span></div>' :
+        '<div class="cat-h"><b>' + esc(c.name) + (over ? '<span class="pill" style="color:var(--red)">+' + Math.round((sp / c.limit - 1) * 100) + '%</span>' : '') + '</b><span>' + fm(sp) + ' / ' + fm(c.limit) + '</span></div>';
+      return '<div class="cat' + (over ? ' over' : '') + '">' + head + '<div class="bar" style="--c:' + col + '"><i style="width:' + p + '%"></i></div></div>';
+    }).join('');
+    var overs = S.cats.filter(function (c) { return spentBy(c.id) > c.limit; });
+    var alertH = overs.length ? '<div class="alert"><span class="ico">' + svg('alert') + '</span><div>Te pasaste en <b>' + overs.map(function (c) { return esc(c.name); }).join(', ') + '</b> por ' + fm(overs.reduce(function (a, c) { return a + spentBy(c.id) - c.limit; }, 0)) + ' este mes.</div></div>' : '';
+    var catForm = ed ? '<form class="form" id="catForm"><input class="in" name="n" placeholder="Nueva categoría" maxlength="30" autocomplete="off"><input class="in" style="flex:0 1 110px" name="l" type="number" inputmode="numeric" min="1" placeholder="Límite"><button class="btn" type="submit">Crear</button></form>' : '';
+    var sv = S.save, sp = sv.target > 0 ? Math.min(1, sv.saved / sv.target) : 0, C = 2 * Math.PI * 40;
+    var svEdit = (ed || sv.target <= 0) ? '<div class="form"><input class="in" id="svName" data-ch="sname" value="' + esc(sv.name) + '" maxlength="40" aria-label="Nombre de la meta"><input class="in" style="flex:0 1 120px" id="svTarget" data-ch="target" type="number" inputmode="numeric" min="0" value="' + (sv.target || '') + '" placeholder="Monto meta" aria-label="Monto de la meta"></div>' : '';
+    var exp = S.expenses.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; }).slice(0, 6);
+    var catName = function (id) { var c = S.cats.filter(function (x) { return x.id === id; })[0]; return c ? c.name : 'Sin categoría'; };
+    var expList = exp.length ? '<ul class="list">' + exp.map(function (x) {
+      return '<li class="item"><span class="txt"><b>' + esc(x.note || catName(x.cat)) + '</b><small>' + esc(catName(x.cat)) + ' · ' + x.date.slice(8) + '/' + x.date.slice(5, 7) + '</small></span><b style="font-variant-numeric:tabular-nums">' + fm(x.amt) + '</b><button class="x" data-act="xd" data-id="' + x.id + '" aria-label="Quitar gasto">×</button></li>';
+    }).join('') + '</ul>' : '<div class="empty">Todavía no registras gastos este mes.</div>';
+    var opts = S.cats.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join('');
+    return '<div class="top"><div><h1>Mis finanzas</h1><p>' + mname + ' · resumen del mes</p></div></div>' + bannerHtml() +
+      alertH +
+      '<section class="card"><div class="card-h"><h2>Presupuesto del mes</h2><button class="link' + (ed ? ' on' : '') + '" data-act="ed" data-v="dinero">' + (ed ? 'Listo' : 'Editar') + '</button></div>' +
+      (S.cats.length ? rows + '<div class="sub">Llevas ' + fm(tt.sp) + ' de ' + fm(tt.lim) + ' (' + tt.pct + '%)</div>' : '<div class="empty">Crea categorías con su límite mensual para ver tus barras.</div>') + catForm +
+      (S.cats.length || ed ? '' : '') + (!S.cats.length && !ed ? '<button class="btn ghost" data-act="ed" data-v="dinero">Agregar categorías</button>' : '') + '</section>' +
+      '<section class="card"><div class="card-h"><h2>Meta de ahorro</h2><span class="sub">' + esc(sv.name) + '</span></div>' +
+      '<div class="ring-wrap"><div class="ring"><svg viewBox="0 0 100 100"><circle class="t" cx="50" cy="50" r="40"/><circle class="p" cx="50" cy="50" r="40" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + (C * (1 - sp)).toFixed(1) + '"/></svg><b>' + Math.round(sp * 100) + '%</b></div><div><div class="big">' + fm(sv.saved) + '</div><div class="sub">' + (sv.target > 0 ? 'de ' + fm(sv.target) + ' · faltan ' + fm(Math.max(0, sv.target - sv.saved)) : 'Define cuánto quieres juntar') + '</div></div></div>' + svEdit +
+      '<form class="form" id="saveForm"><input class="in" name="a" type="number" inputmode="decimal" step="any" placeholder="Abonar (negativo para retirar)"><button class="btn" type="submit">Agregar</button></form></section>' +
+      '<section class="card"><div class="card-h"><h2>Registrar gasto</h2></div>' +
+      (S.cats.length ? '<form class="form" id="expForm"><input class="in" style="flex:0 1 110px" name="amt" type="number" inputmode="decimal" step="any" min="0" placeholder="Monto" required><select class="in" name="cat" aria-label="Categoría">' + opts + '</select><input class="in" name="note" placeholder="Nota (opcional)" maxlength="60" autocomplete="off"><button class="btn" type="submit">Guardar</button></form>' : '<div class="empty">Crea una categoría arriba para poder registrar gastos.</div>') +
+      expList + '</section>';
+  }
+  function vMetas() {
+    var list = S.goals.length ? S.goals.map(function (g) {
+      var dl = '';
+      if (g.due) { var n = daysLeft(g.due); dl = n > 0 ? 'faltan ' + n + (n === 1 ? ' día' : ' días') : n === 0 ? 'vence hoy' : 'venció hace ' + (-n) + (n === -1 ? ' día' : ' días'); }
+      return '<section class="card"><div class="card-h"><h2>' + esc(g.t) + '</h2><button class="x" data-act="gd" data-id="' + g.id + '" aria-label="Quitar meta">×</button></div>' +
+        '<div class="goal-p"><b data-pv="' + g.id + '">' + g.pct + '%</b><span class="sub">' + (g.pct >= 100 ? 'Lograda' : dl) + '</span></div>' +
+        '<div class="bar" style="--c:' + (g.pct >= 100 ? 'var(--green)' : 'var(--blue)') + '"><i style="width:' + g.pct + '%"></i></div>' +
+        '<input type="range" min="0" max="100" step="5" value="' + g.pct + '" data-ch="pct" data-id="' + g.id + '" aria-label="Avance de ' + esc(g.t) + '"></section>';
+    }).join('') : '<div class="empty">Aún no tienes metas. Escribe la primera, por ejemplo "Publicar 12 videos".</div>';
+    return '<div class="top"><div><h1>Tus metas</h1><p>' + S.goals.filter(function (g) { return g.pct >= 100; }).length + ' de ' + S.goals.length + ' logradas</p></div></div>' + bannerHtml() + list +
+      '<section class="card"><div class="card-h"><h2>Nueva meta</h2></div><form class="form" id="goalForm"><input class="in" name="t" placeholder="¿Qué quieres lograr?" maxlength="80" autocomplete="off" required><input class="in" style="flex:0 1 150px" name="due" type="date" aria-label="Fecha límite"><button class="btn" type="submit">Crear</button></form></section>';
+  }
+  function vHabitos() {
+    var ed = ui.edit.habitos, back = [6, 5, 4, 3, 2, 1, 0];
+    var head = '<div class="days" style="margin:0 0 0 auto">' + back.map(function (b) { var d = new Date(); d.setDate(d.getDate() - b); return '<span>' + 'DLMMJVS'.charAt(d.getDay()) + '</span>'; }).join('') + '</div>';
+    var rows = S.habits.map(function (h) {
+      var dots = back.map(function (b) { var k = dayKey(b); return '<button class="' + (h.days[k] ? 'on ' : '') + (b === 0 ? 'today' : '') + '" data-act="ht" data-id="' + h.id + '" data-v="' + k + '" aria-label="' + esc(h.name) + ' ' + k + '">' + svg('check') + '</button>'; }).join('');
+      var s = streak(h);
+      return '<div class="hab"><div class="hab-h"><div><b>' + esc(h.name) + '</b><br><small>' + (s ? 'Racha de ' + s + (s === 1 ? ' día' : ' días') : 'Sin racha todavía') + '</small></div>' + (ed ? '<button class="x" data-act="hd" data-id="' + h.id + '" aria-label="Quitar hábito">×</button>' : '') + '</div><div class="days" style="width:100%;margin:0">' + dots + '</div></div>';
+    }).join('');
+    return '<div class="top"><div><h1>Hábitos</h1><p>Últimos 7 días</p></div><button class="link' + (ed ? ' on' : '') + '" data-act="ed" data-v="habitos">' + (ed ? 'Listo' : 'Editar') + '</button></div>' + bannerHtml() +
+      '<section class="card">' + (S.habits.length ? head + rows : '<div class="empty">Agrega hábitos como "Tomar agua" o "Caminar 20 minutos".</div>') +
+      '<form class="form" id="habitForm"><input class="in" name="n" placeholder="Nuevo hábito" maxlength="50" autocomplete="off"><button class="btn" type="submit">Agregar</button></form></section>';
+  }
+  function vCanal() {
+    var pub = S.videos.filter(function (v) { return v.stage >= 5; }).length;
+    var list = S.videos.length ? S.videos.map(function (v) {
+      var done = v.stage >= 5;
+      return '<div class="vid"><div class="stage-n"><b>' + esc(v.t) + '</b><span class="tag' + (done ? ' fin' : '') + '">' + STAGES[v.stage] + '</span></div>' +
+        '<div class="stages">' + STAGES.map(function (s, i) { return '<i class="' + (i <= v.stage ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+        '<div class="vid-b"><button class="btn ghost sm" data-act="vp" data-id="' + v.id + '"' + (v.stage <= 0 ? ' disabled style="opacity:.4"' : '') + '>Atrás</button>' +
+        '<button class="btn sm" data-act="vn" data-id="' + v.id + '"' + (done ? ' disabled style="opacity:.4"' : '') + '>' + (done ? 'Publicado' : 'Pasar a ' + STAGES[v.stage + 1]) + '</button>' +
+        '<button class="x" style="margin-left:auto" data-act="vd" data-id="' + v.id + '" aria-label="Quitar video">×</button></div></div>';
+    }).join('') : '<div class="empty">Sin videos todavía. Agrega la primera idea.</div>';
+    return '<div class="top"><div><h1>Tu canal</h1><p>' + pub + ' publicados · ' + (S.videos.length - pub) + ' en producción</p></div></div>' + bannerHtml() +
+      '<section class="card"><div class="card-h"><h2>Videos</h2><span class="sub">Idea → Publicado</span></div>' + list +
+      '<form class="form" id="videoForm"><input class="in" name="t" placeholder="Título o idea del video" maxlength="80" autocomplete="off"><button class="btn" type="submit">Agregar</button></form></section>';
+  }
+
+  function render() {
+    var v = { hoy: vHoy, dinero: vDinero, metas: vMetas, habitos: vHabitos, canal: vCanal }[ui.tab] || vHoy;
+    document.getElementById('app').innerHTML = v();
+    document.getElementById('tabs').innerHTML = TABS.map(function (t) {
+      return '<button class="tab' + (ui.tab === t[0] ? ' on' : '') + '" data-act="tab" data-v="' + t[0] + '"' + (ui.tab === t[0] ? ' aria-current="page"' : '') + '>' + svg(t[0]) + t[1] + '</button>';
+    }).join('');
+    setStatus();
+  }
+
+  /* ---------- acciones ---------- */
+  function find(arr, id) { return arr.filter(function (x) { return x.id === id; })[0]; }
+  function rm(arr, id) { return arr.filter(function (x) { return x.id !== id; }); }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+    var a = b.dataset.act, id = b.dataset.id, v = b.dataset.v, o;
+    if (a === 'tab') { ui.tab = v; try { localStorage.setItem('pv1tab', v); } catch (x) {} render(); window.scrollTo(0, 0); return; }
+    if (a === 'ed') { ui.edit[v] = !ui.edit[v]; render(); return; }
+    if (a === 'tt') { o = find(S.tasks, id); if (o) o.done = !o.done; }
+    else if (a === 'td') S.tasks = rm(S.tasks, id);
+    else if (a === 'ht') { o = find(S.habits, id); if (o) { if (o.days[v]) delete o.days[v]; else o.days[v] = true; } }
+    else if (a === 'hd') S.habits = rm(S.habits, id);
+    else if (a === 'cd') S.cats = rm(S.cats, id);
+    else if (a === 'xd') S.expenses = rm(S.expenses, id);
+    else if (a === 'gd') S.goals = rm(S.goals, id);
+    else if (a === 'vd') S.videos = rm(S.videos, id);
+    else if (a === 'vn') { o = find(S.videos, id); if (o && o.stage < 5) o.stage++; }
+    else if (a === 'vp') { o = find(S.videos, id); if (o && o.stage > 0) o.stage--; }
+    else if (a === 'blank') { S = blank(S.name); }
+    else if (a === 'keep') { S.sample = false; }
+    else return;
+    touch();
+  });
+  document.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, fd = new FormData(f), id = f.id, s = function (k) { return String(fd.get(k) || '').trim(); }, n;
+    if (id === 'nameForm') { if (!s('n')) return; S.name = s('n'); touch(); return; }
+    if (id === 'taskForm') { if (!s('t')) return; S.tasks.push({ id: uid(), t: s('t'), done: false }); }
+    else if (id === 'habitForm') { if (!s('n')) return; S.habits.push({ id: uid(), name: s('n'), days: {} }); }
+    else if (id === 'catForm') { var l = parseFloat(s('l')); if (!s('n') || !(l > 0)) return; S.cats.push({ id: uid(), name: s('n'), limit: l }); }
+    else if (id === 'expForm') { n = parseFloat(s('amt')); if (!(n > 0) || !s('cat')) return; S.expenses.push({ id: uid(), cat: s('cat'), amt: n, note: s('note'), date: T }); }
+    else if (id === 'saveForm') { n = parseFloat(s('a')); if (!isFinite(n) || !n) return; S.save.saved = Math.max(0, S.save.saved + n); }
+    else if (id === 'goalForm') { if (!s('t')) return; S.goals.push({ id: uid(), t: s('t'), pct: 0, due: s('due') }); }
+    else if (id === 'videoForm') { if (!s('t')) return; S.videos.push({ id: uid(), t: s('t'), stage: 0 }); }
+    else return;
+    S.sample = false;
+    touch();
+  });
+  document.addEventListener('change', function (e) {
+    var el = e.target, k = el.dataset && el.dataset.ch; if (!k) return;
+    var o;
+    if (k === 'limit') { o = find(S.cats, el.dataset.id); var l = parseFloat(el.value); if (o && l > 0) o.limit = l; }
+    else if (k === 'sname') S.save.name = el.value.trim() || 'Mi meta de ahorro';
+    else if (k === 'target') S.save.target = Math.max(0, parseFloat(el.value) || 0);
+    else if (k === 'pct') { o = find(S.goals, el.dataset.id); if (o) o.pct = parseInt(el.value, 10) || 0; }
+    S.sample = false;
+    touch();
+  });
+  document.addEventListener('input', function (e) {
+    var el = e.target; if (el.dataset && el.dataset.ch === 'pct') {
+      var lab = document.querySelector('[data-pv="' + el.dataset.id + '"]'); if (lab) lab.textContent = el.value + '%';
+    }
+  });
+
+  render();
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+})();
+</script>
+
+</body></html>
